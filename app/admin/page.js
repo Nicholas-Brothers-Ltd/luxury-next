@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "<CORRECT PATH>";
+import { createClient } from "../../libsupabase";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 

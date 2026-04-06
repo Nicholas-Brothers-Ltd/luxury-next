@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "<CORRECT PATH>";
+import { createClient } from "../../lib/supabase";
 import toast from "react-hot-toast";
 
 export default function Navbar() {
