@@ -1,23 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "../../lib/supabase";
+import { createClient } from "../../lib/supabase";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 export default function AdminPage() {
+  const supabase = createClient();
+  const router = useRouter();
+
   const [properties, setProperties] = useState([]);
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [adminPassword, setAdminPassword] = useState("");
-
-  const router = useRouter();
-
-  const ADMIN_EMAIL = "admin@nicholasexperience.com";
-  const ADMIN_PASSWORD = "Nicholas@Admin123";
 
   const [editingId, setEditingId] = useState(null);
 
@@ -48,37 +43,22 @@ export default function AdminPage() {
     return data.secure_url;
   };
 
-  // 🔐 AUTH
+  // 🔐 SIMPLE AUTH (ONLY CHECK IF LOGGED IN)
   useEffect(() => {
-    const checkAdmin = async () => {
+    const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
 
-      if (!session || !session.user) {
+      if (!session) {
         toast.error("Please login first 🔐");
         router.push("/auth");
-        return;
-      }
-
-      if (session.user.email !== ADMIN_EMAIL) {
-        toast.error("Access denied 🚫");
-        router.push("/");
         return;
       }
 
       setUser(session.user);
     };
 
-    checkAdmin();
-  }, [router]);
-
-  const handlePasswordSubmit = () => {
-    if (adminPassword === ADMIN_PASSWORD) {
-      setIsAuthorized(true);
-      toast.success("Access granted 🧠");
-    } else {
-      toast.error("Incorrect password ❌");
-    }
-  };
+    checkUser();
+  }, [router, supabase]);
 
   // 🧠 FETCH DATA
   const fetchAll = async () => {
@@ -103,8 +83,8 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    if (user && isAuthorized) fetchAll();
-  }, [user, isAuthorized]);
+    if (user) fetchAll();
+  }, [user]);
 
   const deleteProperty = async (id) => {
     if (!confirm("Delete this property?")) return;
@@ -180,18 +160,6 @@ export default function AdminPage() {
   };
 
   if (!user) return <main style={{ padding: "3rem" }}>Checking...</main>;
-
-  if (!isAuthorized) {
-    return (
-      <main style={{ padding: "3rem", display: "flex", justifyContent: "center" }}>
-        <div style={{ width: "400px" }}>
-          <h2>Admin Password</h2>
-          <input type="password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} />
-          <button onClick={handlePasswordSubmit}>Unlock</button>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main style={{ padding: "3rem", maxWidth: "1200px", margin: "auto", color: "#fff" }}>
