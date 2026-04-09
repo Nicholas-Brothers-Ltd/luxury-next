@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createClient } from "../../lib/supabase";
 import { useRouter } from "next/navigation";
 
 export default function AuthPage() {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
 
   const [isLogin, setIsLogin] = useState(true);
@@ -28,10 +28,13 @@ export default function AuthPage() {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: form.email,
           password: form.password,
         });
+
+        console.log("LOGIN DATA:", data);
+        console.log("LOGIN ERROR:", error);
 
         if (error) throw error;
 
@@ -39,7 +42,7 @@ export default function AuthPage() {
         router.push("/admin");
         router.refresh();
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: form.email,
           password: form.password,
           options: {
@@ -47,12 +50,20 @@ export default function AuthPage() {
           },
         });
 
+        console.log("SIGNUP DATA:", data);
+        console.log("SIGNUP ERROR:", error);
+
         if (error) throw error;
 
-        setMessage("Check your email to confirm signup 📩");
+        if (!data?.user) {
+          throw new Error("Signup failed: No user returned");
+        }
+
+        setMessage("Signup successful. Check your email 📩");
       }
     } catch (err) {
-      setMessage(err.message);
+      console.error("AUTH ERROR:", err);
+      setMessage(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
