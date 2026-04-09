@@ -1,31 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { createClient } from "../../lib/supabase";
 import toast from "react-hot-toast";
 
 export default function Navbar() {
-  const supabase = createClient();
+  // ✅ FIX: stable Supabase instance
+  const supabase = useMemo(() => createClient(), []);
 
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true); // ✅ NEW
+  const [loadingUser, setLoadingUser] = useState(true);
   const [active, setActive] = useState("");
 
-  // 🔐 AUTH (FIXED PROPERLY)
+  // 🔐 AUTH (NOW STABLE)
   useEffect(() => {
     let isMounted = true;
 
     const init = async () => {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
+      const { data, error } = await supabase.auth.getUser();
+
+      if (error) {
+        console.error("Auth error:", error.message);
+      }
 
       if (isMounted) {
-        setUser(user ?? null);
-        setLoadingUser(false); // ✅ IMPORTANT
+        setUser(data?.user ?? null);
+        setLoadingUser(false);
       }
     };
 
@@ -144,8 +146,10 @@ export default function Navbar() {
             Favorites
           </Link>
 
-          {/* ✅ PREVENT UI GLITCH */}
-          {loadingUser ? null : user ? (
+          {/* ✅ FINAL STABLE RENDER */}
+          {loadingUser ? (
+            <span style={{ opacity: 0.6 }}>...</span>
+          ) : user ? (
             <>
               <span style={{ opacity: 0.7 }}>
                 {formatEmail(user.email)}
