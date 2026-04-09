@@ -6,7 +6,6 @@ import { createClient } from "../../lib/supabase";
 import toast from "react-hot-toast";
 
 export default function Navbar() {
-  // ✅ FIX: stable Supabase instance
   const supabase = useMemo(() => createClient(), []);
 
   const [scrolled, setScrolled] = useState(false);
@@ -14,19 +13,15 @@ export default function Navbar() {
   const [loadingUser, setLoadingUser] = useState(true);
   const [active, setActive] = useState("");
 
-  // 🔐 AUTH (NOW STABLE)
+  // 🔐 AUTH (CLEAN + CORRECT)
   useEffect(() => {
     let isMounted = true;
 
     const init = async () => {
-      const { data, error } = await supabase.auth.getUser();
-
-      if (error) {
-        console.error("Auth error:", error.message);
-      }
+      const { data } = await supabase.auth.getUser();
 
       if (isMounted) {
-        setUser(data?.user ?? null);
+        setUser(data?.user ?? null); // ✅ null is VALID
         setLoadingUser(false);
       }
     };
@@ -146,7 +141,7 @@ export default function Navbar() {
             Favorites
           </Link>
 
-          {/* ✅ FINAL STABLE RENDER */}
+          {/* ✅ FINAL FIX */}
           {loadingUser ? (
             <span style={{ opacity: 0.6 }}>...</span>
           ) : user ? (
