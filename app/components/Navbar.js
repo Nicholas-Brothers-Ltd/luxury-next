@@ -6,29 +6,35 @@ import { createClient } from "../../lib/supabase";
 import toast from "react-hot-toast";
 
 export default function Navbar() {
-  const supabase = createClient(); // ✅ moved inside component
+  const supabase = createClient();
 
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true); // ✅ NEW
   const [active, setActive] = useState("");
 
-  // 🔐 AUTH (FIXED + MORE RELIABLE)
+  // 🔐 AUTH (FIXED PROPERLY)
   useEffect(() => {
     let isMounted = true;
 
-    const getUser = async () => {
+    const init = async () => {
       const {
         data: { user },
-      } = await supabase.auth.getUser(); // ✅ use getUser instead of getSession
+        error,
+      } = await supabase.auth.getUser();
 
-      if (isMounted) setUser(user || null);
+      if (isMounted) {
+        setUser(user ?? null);
+        setLoadingUser(false); // ✅ IMPORTANT
+      }
     };
 
-    getUser();
+    init();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setUser(session?.user || null);
+        setUser(session?.user ?? null);
+        setLoadingUser(false);
       }
     );
 
@@ -138,7 +144,8 @@ export default function Navbar() {
             Favorites
           </Link>
 
-          {user ? (
+          {/* ✅ PREVENT UI GLITCH */}
+          {loadingUser ? null : user ? (
             <>
               <span style={{ opacity: 0.7 }}>
                 {formatEmail(user.email)}
