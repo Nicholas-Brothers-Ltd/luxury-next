@@ -5,6 +5,8 @@ import Link from "next/link";
 import { createClient } from "../../lib/supabase";
 import toast from "react-hot-toast";
 
+const supabase = createClient(); // ✅ FIX
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
@@ -40,7 +42,7 @@ export default function Navbar() {
     toast("Logged out successfully 👋");
   };
 
-  // 🎯 SCROLL EFFECT (BACKGROUND)
+  // 🎯 SCROLL EFFECT
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 40);
@@ -50,7 +52,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // 🧭 SCROLL SPY (ACTIVE SECTION)
+  // 🧭 SCROLL SPY
   useEffect(() => {
     const sections = ["featured", "buy", "rent", "luxury", "results"];
 
@@ -92,25 +94,19 @@ export default function Navbar() {
         top: 0,
         width: "100%",
         zIndex: 1000,
-
         background: scrolled
           ? "rgba(10,10,10,0.85)"
           : "rgba(0,0,0,0.4)",
-
         backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-
         borderBottom: scrolled
           ? "1px solid rgba(255,255,255,0.08)"
           : "1px solid rgba(255,255,255,0.05)",
-
         transition: "all 0.3s ease",
         padding: scrolled ? "0.8rem 2rem" : "1.2rem 2rem",
       }}
     >
       <div
         style={{
-          width: "100%",
           maxWidth: "1400px",
           margin: "0 auto",
           display: "flex",
@@ -118,84 +114,29 @@ export default function Navbar() {
           alignItems: "center",
         }}
       >
-        {/* LOGO */}
-        <Link
-          href="/"
-          style={{
-            fontSize: "1.3rem",
-            fontWeight: "600",
-            letterSpacing: "0.5px",
-            color: "#fff",
-            textDecoration: "none",
-          }}
-        >
+        <Link href="/" style={{ color: "#fff", textDecoration: "none" }}>
           Nicholas Experience
         </Link>
 
-        {/* NAV LINKS */}
-        <div
-          style={{
-            display: "flex",
-            gap: "2rem",
-            alignItems: "center",
-            fontSize: "0.9rem",
-          }}
-        >
-          {/* 🔥 SECTION LINKS */}
-          <Link href="#featured" style={linkStyle(active === "featured")}>
-            Home
-          </Link>
+        <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
+          <Link href="#featured" style={linkStyle(active === "featured")}>Home</Link>
+          <Link href="#buy" style={linkStyle(active === "buy")}>Buy</Link>
+          <Link href="#rent" style={linkStyle(active === "rent")}>Rent</Link>
+          <Link href="#luxury" style={linkStyle(active === "luxury")}>Luxury</Link>
+          <Link href="/favorites" style={{ color: "#fff" }}>Favorites</Link>
 
-          <Link href="#buy" style={linkStyle(active === "buy")}>
-            Buy
-          </Link>
-
-          <Link href="#rent" style={linkStyle(active === "rent")}>
-            Rent
-          </Link>
-
-          <Link href="#luxury" style={linkStyle(active === "luxury")}>
-            Luxury
-          </Link>
-
-          <Link href="/favorites" style={{ color: "#fff" }}>
-            Favorites
-          </Link>
-
-          {/* 🔐 AUTH */}
           {user ? (
             <>
               <span style={{ opacity: 0.7 }}>
                 {formatEmail(user.email)}
               </span>
 
-              <button
-                onClick={handleLogout}
-                style={{
-                  padding: "0.4rem 0.9rem",
-                  borderRadius: "20px",
-                  border: "1px solid rgba(255,255,255,0.2)",
-                  background: "transparent",
-                  color: "#fff",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = "#d4af37";
-                  e.target.style.color = "#000";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = "transparent";
-                  e.target.style.color = "#fff";
-                }}
-              >
+              <button onClick={handleLogout}>
                 Logout
               </button>
             </>
           ) : (
-            <Link href="/auth" style={{ color: "#fff" }}>
-              Login
-            </Link>
+            <Link href="/auth">Login</Link>
           )}
         </div>
       </div>

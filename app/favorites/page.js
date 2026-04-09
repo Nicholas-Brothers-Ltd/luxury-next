@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
+const supabase = createClient(); // ✅ THIS WAS MISSING
+
 export default function FavoritesPage() {
 
   const [favorites, setFavorites] = useState([]);
@@ -20,7 +22,7 @@ export default function FavoritesPage() {
       const { data } = await supabase.auth.getUser();
 
       if (!data.user) {
-        router.push("/auth"); // 🚪 redirect if not logged in
+        router.push("/auth");
       } else {
         setUser(data.user);
       }
@@ -29,7 +31,7 @@ export default function FavoritesPage() {
     checkUser();
   }, [router]);
 
-  // ❤️ STEP 2: FETCH FAVORITES (ONLY WHEN USER EXISTS)
+  // ❤️ STEP 2: FETCH FAVORITES
   useEffect(() => {
     if (!user) return;
 
@@ -60,7 +62,6 @@ export default function FavoritesPage() {
     return new Intl.NumberFormat().format(price);
   }
 
-  // ⏳ LOADING AUTH STATE
   if (!user) {
     return (
       <main style={{ padding: "3rem" }}>
@@ -100,14 +101,6 @@ export default function FavoritesPage() {
                 boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
                 transition: "all 0.3s ease",
                 cursor: "pointer"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-8px)";
-                e.currentTarget.style.boxShadow = "0 20px 40px rgba(0,0,0,0.15)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.08)";
               }}
             >
 

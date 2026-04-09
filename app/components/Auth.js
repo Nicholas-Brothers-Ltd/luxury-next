@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "<path>";
+import { createClient } from "../../lib/supabase";
 import { useRouter } from "next/navigation";
+
+const supabase = createClient(); // ✅ FIX
 
 export default function Auth() {
   const [email, setEmail] = useState("");
@@ -11,8 +13,6 @@ export default function Auth() {
   const [message, setMessage] = useState("");
 
   const router = useRouter();
-
-  const ADMIN_EMAIL = "admin@nicholasexperience.com";
 
   const handleAuth = async () => {
     if (isLogin) {
@@ -25,27 +25,21 @@ export default function Auth() {
         setMessage(error.message);
       } else {
         setMessage("Logged in successfully 🎉");
-
-        // 🔥 REDIRECT LOGIC (NEW)
-        if (email === ADMIN_EMAIL) {
-          router.push("/admin");
-        } else {
-          router.push("/");
-        }
+        router.push("/admin"); // ✅ SIMPLE FLOW (as you wanted)
       }
     } else {
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
 
       if (error) {
         setMessage(error.message);
       } else {
-        setMessage("Account created! 🎉");
-
-        // 🔥 REDIRECT AFTER SIGNUP (NEW)
-        router.push("/");
+        setMessage("Check your email to confirm 📩");
       }
     }
   };
