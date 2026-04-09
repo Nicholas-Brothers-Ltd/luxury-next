@@ -10,10 +10,9 @@ export default function Navbar() {
 
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
   const [active, setActive] = useState("");
 
-  // 🔐 AUTH (CLEAN + CORRECT)
+  // 🔐 AUTH (SIMPLIFIED + RELIABLE)
   useEffect(() => {
     let isMounted = true;
 
@@ -21,8 +20,7 @@ export default function Navbar() {
       const { data } = await supabase.auth.getUser();
 
       if (isMounted) {
-        setUser(data?.user ?? null); // ✅ null is VALID
-        setLoadingUser(false);
+        setUser(data?.user ?? null);
       }
     };
 
@@ -31,7 +29,6 @@ export default function Navbar() {
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user ?? null);
-        setLoadingUser(false);
       }
     );
 
@@ -141,10 +138,8 @@ export default function Navbar() {
             Favorites
           </Link>
 
-          {/* ✅ FINAL FIX */}
-          {loadingUser ? (
-            <span style={{ opacity: 0.6 }}>...</span>
-          ) : user ? (
+          {/* ✅ CLEAN AUTH RENDER */}
+          {user ? (
             <>
               <span style={{ opacity: 0.7 }}>
                 {formatEmail(user.email)}
@@ -159,7 +154,9 @@ export default function Navbar() {
               </button>
             </>
           ) : (
-            <Link href="/auth">Login</Link>
+            <Link href="/auth" style={{ color: "#fff" }}>
+              Login
+            </Link>
           )}
         </div>
       </div>
