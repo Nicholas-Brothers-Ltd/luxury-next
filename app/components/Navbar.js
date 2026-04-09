@@ -5,25 +5,28 @@ import Link from "next/link";
 import { createClient } from "../../lib/supabase";
 import toast from "react-hot-toast";
 
-const supabase = createClient(); // ✅ FIX
-
 export default function Navbar() {
+  const supabase = createClient(); // ✅ moved inside component
+
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
   const [active, setActive] = useState("");
 
-  // 🔐 AUTH
+  // 🔐 AUTH (FIXED + MORE RELIABLE)
   useEffect(() => {
     let isMounted = true;
 
-    const initAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (isMounted) setUser(data.session?.user || null);
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser(); // ✅ use getUser instead of getSession
+
+      if (isMounted) setUser(user || null);
     };
 
-    initAuth();
+    getUser();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(
+    const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user || null);
       }
@@ -31,15 +34,15 @@ export default function Navbar() {
 
     return () => {
       isMounted = false;
-      authListener?.subscription?.unsubscribe();
+      listener?.subscription?.unsubscribe();
     };
-  }, []);
+  }, [supabase]);
 
   // 🚪 LOGOUT
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
-    toast("Logged out successfully 👋");
+    toast.success("Logged out successfully 👋");
   };
 
   // 🎯 SCROLL EFFECT
@@ -119,17 +122,31 @@ export default function Navbar() {
         </Link>
 
         <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
-          <Link href="#featured" style={linkStyle(active === "featured")}>Home</Link>
-          <Link href="#buy" style={linkStyle(active === "buy")}>Buy</Link>
-          <Link href="#rent" style={linkStyle(active === "rent")}>Rent</Link>
-          <Link href="#luxury" style={linkStyle(active === "luxury")}>Luxury</Link>
-          <Link href="/favorites" style={{ color: "#fff" }}>Favorites</Link>
+          <Link href="#featured" style={linkStyle(active === "featured")}>
+            Home
+          </Link>
+          <Link href="#buy" style={linkStyle(active === "buy")}>
+            Buy
+          </Link>
+          <Link href="#rent" style={linkStyle(active === "rent")}>
+            Rent
+          </Link>
+          <Link href="#luxury" style={linkStyle(active === "luxury")}>
+            Luxury
+          </Link>
+          <Link href="/favorites" style={{ color: "#fff" }}>
+            Favorites
+          </Link>
 
           {user ? (
             <>
               <span style={{ opacity: 0.7 }}>
                 {formatEmail(user.email)}
               </span>
+
+              <Link href="/admin" style={{ color: "#fff" }}>
+                Admin
+              </Link>
 
               <button onClick={handleLogout}>
                 Logout
