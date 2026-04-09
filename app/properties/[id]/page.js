@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { createClient } from "../../lib/supabase";
+import { createClient } from "../../../lib/supabase";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+
+const supabase = createClient(); // ✅ ADDED (CRITICAL FIX)
 
 export default function PropertyPage({ params }) {
   const { id } = use(params);
